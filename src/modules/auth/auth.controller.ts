@@ -68,7 +68,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFu
 });
 
 const myProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user?.id;
+    const userId = req.user?.id as string;
 
     const result = await authService.myProfile(userId);
 
