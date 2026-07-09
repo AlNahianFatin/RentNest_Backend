@@ -1,0 +1,25 @@
+model RentalRequest {
+  id         String   @id @default(uuid())
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  thumbnail  String?
+  isFeatured Boolean  @default(false)
+  isPremium  Boolean  @default(false)
+  // status     PostStatus @default(PUBLISHED)
+  tags       String[]
+  views      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  payment    Payment?
+  tenantId   String
+  tenant     User     @relation("TenantRequests", fields: [tenantId], references: [id], onDelete: Cascade)
+  landlordId String
+  landlord   User     @relation("LandlordRequests", fields: [landlordId], references: [id], onDelete: Cascade)
+  propertyId String 
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade) 
+
+  @@index([tenantId])
+  @@index([landlordId])
+  @@map("rentalRequests")
+}

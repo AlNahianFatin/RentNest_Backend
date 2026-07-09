@@ -4,24 +4,24 @@ enum ActiveStatus {
 }
 
 enum Role {
-  USER
-  AUTHOR
+  TENANT
+  LANDLORD
   ADMIN
 }
 
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  STUDIO
 }
 
-enum CommentStatus {
+enum ReviewStatus {
   APPROVED
   REJECTED
 }
 
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }

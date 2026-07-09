@@ -4,14 +4,17 @@ model User {
   email        String       @unique
   password     String
   activeStatus ActiveStatus @default(ACTIVE)
-  role         Role         @default(USER)
+  role         Role         @default(TENANT)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  profile      Profile?
-  posts        Post[]
-  comments     Comment[]
-  subscription subscription?
+  // profile      Profile?
+  // posts        Post[]
+  properties       Property[]
+  payments         Payment[]
+  reviews          Review[]
+  tenantRequests   RentalRequest[] @relation("TenantRequests")
+  landlordRequests RentalRequest[] @relation("LandlordRequests")
 
   @@map("users")
 }

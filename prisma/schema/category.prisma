@@ -1,0 +1,10 @@
+model Category {
+  id          String       @id @default(uuid())
+  propertType PropertyType
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  properties Property[]
+
+  @@map("categories")
+}
