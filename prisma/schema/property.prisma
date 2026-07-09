@@ -1,19 +1,20 @@
 model Property {
-  id              String   @id @default(uuid())
+  id              String         @id @default(uuid())
   houseNo         Int
   roadNo          Int
-  location        String   @db.Text
-  // status    CommentStatus @default(APPROVED)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  stripeProductId String   @unique
+  location        String         @db.Text
+  stripeProductId String         @unique
+  price           String
+  status          PropertyStatus
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  reviews    Review[]
+  reviews        Review[]
   rentalRequests RentalRequest[]
-  landlordId String
-  landlord   User   @relation(fields: [landlordId], references: [id], onDelete: Cascade)
-  categoryId String   
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  landlordId     String
+  landlord       User            @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  categoryId     String
+  type           Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([categoryId])
   @@index([landlordId])

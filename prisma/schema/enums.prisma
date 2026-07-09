@@ -15,6 +15,12 @@ enum PropertyType {
   STUDIO
 }
 
+enum PropertyStatus {
+  AVAILABLE
+  PENDING
+  SOLD
+}
+
 enum ReviewStatus {
   APPROVED
   REJECTED

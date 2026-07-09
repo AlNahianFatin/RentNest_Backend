@@ -5,6 +5,8 @@ import config from "./config";
 import { authRoutes } from "./modules/auth/auth.route";
 import { notFound } from "./middlewares/notFound";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
+import { propertyRoutes } from "./modules/property/property.route";
+import { categoryRoutes } from "./modules/category/category.route";
 
 const app: Application = express();
 
@@ -28,8 +30,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
-// app.use("/api/users", userRoutes);
-// app.use("/api/posts", postRoutes);
+app.use("/api/properties", propertyRoutes);
+app.use("/api/categories", categoryRoutes);
 // app.use("/api/comments", commentRoutes);
 // app.use("/api/subscriptions", subscriptionRoutes);
 // app.use("/api/premium", premiumRoutes)

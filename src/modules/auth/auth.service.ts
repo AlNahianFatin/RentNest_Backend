@@ -7,8 +7,7 @@ import { jwtUtils } from "../../utils/jwt";
 
 const registerUser = async (payload: IRegisterUser) => {
     let { name, email, password, role } = payload;
-    // if (!role)
-    //     role = 'contributor';
+    
     const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
     const createUser: IRegisterUser = { name, email, password: hashedPassword, role };
