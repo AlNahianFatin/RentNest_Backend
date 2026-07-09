@@ -9,7 +9,7 @@ const registerUser = async (payload: IRegisterUser) => {
     let { name, email, password, role } = payload;
     // if (!role)
     //     role = 'contributor';
-    const hashedPassword = await bcrypt.hash(password, config.bcrypt_salt_rounds);
+    const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
     const createUser: IRegisterUser = { name, email, password: hashedPassword, role };
 
@@ -24,7 +24,7 @@ const registerUser = async (payload: IRegisterUser) => {
 const loginUser = async (payload: ILoginUser) => {
     const { email, password } = payload;
 
-    const user = await prisma.user.findUniqueOrThrow({ where: { email } }); //findUnique returns and empty array if no matching data with the email is found. Whereas findUniqueOrThrow returns an error message in that case, which helps us by not having to manually throw not found message
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
 
     if (user.activeStatus === "BLOCKED")
         throw new Error("Your account is blocked. Please contact support.");
