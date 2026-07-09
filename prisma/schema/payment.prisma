@@ -5,8 +5,8 @@ model Payment {
     status           PaymentStatus @default(PENDING)
 
     // stripe related ids
-    stripeCustomerId String @unique
-    transactionId    String @unique
+    stripeCustomerId    String @unique
+    stripeTransactionId String @unique
 
     rentalRequestId String        @unique
     rentalRequest   RentalRequest @relation(fields: [rentalRequestId], references: [id], onDelete: Cascade)

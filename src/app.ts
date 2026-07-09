@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import config from "./config";
+import { authRoutes } from "./modules/auth/auth.route";
 // import { notFound } from "./middlewares/notFound";
 // import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 
@@ -26,7 +27,7 @@ app.get("/", (req: Request, res: Response) => {
     res.send(`Hello, world!`);
 });
 
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 // app.use("/api/users", userRoutes);
 // app.use("/api/posts", postRoutes);
 // app.use("/api/comments", commentRoutes);
