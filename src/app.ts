@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import config from "./config";
 import { authRoutes } from "./modules/auth/auth.route";
-// import { notFound } from "./middlewares/notFound";
+import { notFound } from "./middlewares/notFound";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 
 const app: Application = express();
@@ -34,7 +34,7 @@ app.use("/api/auth", authRoutes);
 // app.use("/api/subscriptions", subscriptionRoutes);
 // app.use("/api/premium", premiumRoutes)
 
-// app.use(notFound);
+app.use(notFound);
 
 app.use(globalErrorHandler);
 
