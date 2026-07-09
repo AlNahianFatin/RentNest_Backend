@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2023",
+    "types": ["node"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  // "include": ["src/**/*"], //this tells ts compiler to consider only the ts files inside the src directory. But since prisma.config.ts file is put in the root directory following standard convention, this line will throw error as ts compiler finds ts file outside the src directory. So, it is now commented out
+  "exclude": ["node_modules", "dist"]
+}
