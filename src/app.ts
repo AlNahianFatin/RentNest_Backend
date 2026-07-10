@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { propertyRoutes } from "./modules/property/property.route";
 import { categoryRoutes } from "./modules/category/category.route";
 import { landlordRoutes } from "./modules/landlord/landlord.route";
+import { rentalRoutes } from "./modules/rental/rental.route";
 
 const app: Application = express();
 
@@ -25,16 +26,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-//adding custom API routes
 app.get("/", (req: Request, res: Response) => {
-    res.send(`Hello, world!`);
+    res.send(`Welcome to RenstNest!`);
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/landlord", landlordRoutes);
-// app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/rentals", rentalRoutes);
 // app.use("/api/premium", premiumRoutes)
 
 app.use(notFound);

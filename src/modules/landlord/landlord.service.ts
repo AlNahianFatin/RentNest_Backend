@@ -1,7 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { ICreateProperty, IUpdateProperty } from "./landlord.interface";
-import config from "../../config";
-import { PropertyStatus, RequestStatus } from "../../../generated/prisma/enums";
+import { RequestStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 
 const createProperty = async (userId: string, payload: ICreateProperty) => {

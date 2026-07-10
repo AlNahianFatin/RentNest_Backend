@@ -1,8 +1,5 @@
-import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import { IPropertyQuery } from "./property.interface";
-import config from "../../config";
-import { jwtUtils } from "../../utils/jwt";
 import { PropertyWhereInput } from "../../../generated/prisma/models";
 import { PropertyStatus } from "../../../generated/prisma/enums";
 

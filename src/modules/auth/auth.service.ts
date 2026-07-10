@@ -7,7 +7,7 @@ import { jwtUtils } from "../../utils/jwt";
 
 const registerUser = async (payload: IRegisterUser) => {
     let { name, email, password, role } = payload;
-    
+
     const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
     const createUser: IRegisterUser = { name, email, password: hashedPassword, role };
@@ -77,7 +77,7 @@ const myProfile = async (userId: string) => {
         where: { id: userId },
         include: {
             properties: {
-                include: { category: true }
+                include: { type: true }
             },
             payments: true,
             reviews: true,
