@@ -75,7 +75,7 @@ const myProfile = catchAsync(async (req: Request, res: Response, next: NextFunct
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Profile records retreived successfully",
+        message: "Profile records retrieved successfully",
         data: result
     });
 })

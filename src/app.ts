@@ -7,6 +7,7 @@ import { notFound } from "./middlewares/notFound";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { propertyRoutes } from "./modules/property/property.route";
 import { categoryRoutes } from "./modules/category/category.route";
+import { landlordRoutes } from "./modules/landlord/landlord.route";
 
 const app: Application = express();
 
@@ -32,7 +33,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/categories", categoryRoutes);
-// app.use("/api/comments", commentRoutes);
+app.use("/api/landlord", landlordRoutes);
 // app.use("/api/subscriptions", subscriptionRoutes);
 // app.use("/api/premium", premiumRoutes)
 

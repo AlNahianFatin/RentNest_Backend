@@ -8,8 +8,6 @@ model User {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  // profile      Profile?
-  // posts        Post[]
   properties       Property[]
   payments         Payment[]
   reviews          Review[]

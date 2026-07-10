@@ -21,7 +21,7 @@ const getProperties = catchAsync(async (req: Request, res: Response, next: NextF
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Properties retreived successfully",
+        message: "Properties retrieved successfully",
         data: properties.data,
         meta: properties.meta
     });
@@ -35,7 +35,7 @@ const getProperty = catchAsync(async (req: Request, res: Response, next: NextFun
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Property retreived successfully",
+        message: "Property retrieved successfully",
         data: result
     });
 });

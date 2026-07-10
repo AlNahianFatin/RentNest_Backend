@@ -9,16 +9,22 @@ enum Role {
   ADMIN
 }
 
-enum PropertyType {
-  APARTMENT
-  HOUSE
-  STUDIO
-}
+// enum PropertyType {
+//   APARTMENT
+//   HOUSE
+//   STUDIO
+// }
 
 enum PropertyStatus {
   AVAILABLE
   PENDING
   SOLD
+}
+
+enum RequestStatus {
+  ACCEPTED
+  PENDING
+  REJECTED
 }
 
 enum ReviewStatus {

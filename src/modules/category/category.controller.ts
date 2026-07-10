@@ -19,7 +19,7 @@ const getCategories = catchAsync(async (req: Request, res: Response, next: NextF
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Categories retreived successfully",
+        message: "Categories retrieved successfully",
         data: categories
     })
 })
