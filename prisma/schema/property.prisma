@@ -1,14 +1,16 @@
 model Property {
-  id              String         @id @default(uuid())
-  houseNo         Int
-  roadNo          Int
-  location        String         @db.Text
-  stripeProductId String         @unique
-  stripePriceId   String         @unique
-  price           Int
-  status          PropertyStatus @default(AVAILABLE)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id        String         @id @default(uuid())
+  houseNo   Int
+  roadNo    Int
+  location  String         @db.Text
+  price     Int
+  status    PropertyStatus @default(AVAILABLE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // stripe related ids
+  stripeProductId String @unique
+  stripePriceId   String @unique
 
   reviews        Review[]
   rentalRequests RentalRequest[]

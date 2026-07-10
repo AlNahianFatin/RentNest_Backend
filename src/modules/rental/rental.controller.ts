@@ -51,7 +51,7 @@ const getRentalRequest = catchAsync(async (req: Request, res: Response, next: Ne
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Property retrieved successfully",
+        message: "Rental request details retrieved successfully",
         data: result
     });
 });

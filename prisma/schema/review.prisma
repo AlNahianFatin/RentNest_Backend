@@ -12,5 +12,6 @@ model Review {
 
   @@index([reviewerId])
   @@index([propertyId])
+  @@unique([reviewerId, propertyId])
   @@map("reviews")
 }

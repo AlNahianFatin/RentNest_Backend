@@ -1,12 +1,11 @@
 model Payment {
-    id               String        @id @default(uuid())
-    currentPeriodEnd DateTime
-    paidAt           DateTime      @default(now())
-    status           PaymentStatus @default(PENDING)
+    id     String        @id @default(uuid())
+    paidAt DateTime      @default(now())
+    status PaymentStatus @default(PENDING)
 
     // stripe related ids
-    stripeCustomerId    String @unique
-    stripeTransactionId String @unique
+    stripeCustomerId String 
+    stripePaymentId  String @unique
 
     rentalRequestId String        @unique
     rentalRequest   RentalRequest @relation(fields: [rentalRequestId], references: [id], onDelete: Cascade)
