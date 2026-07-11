@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { IReviewPayload } from "./review.interface";
-import { PaymentStatus } from "../../../generated/prisma/enums";
+import { PaymentStatus, ReviewStatus } from "../../../generated/prisma/enums";
 
 const createReview = async (userId: string, payload: IReviewPayload) => {
     const { propertyId } = payload;
@@ -52,6 +52,23 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     return result;
 };
 
+const manageReview = async (reviewId: string, status: ReviewStatus) => {
+    const review = await prisma.review.findUniqueOrThrow({
+        where: { id: reviewId }
+    });
+
+    if (status === review.status)
+        throw new Error("Change review status to update");
+
+    const result = await prisma.review.update({
+        where: { id: reviewId },
+        data: { status }
+    });
+
+    return result;
+};
+
 export const reviewService = {
-    createReview
+    createReview,
+    manageReview
 };

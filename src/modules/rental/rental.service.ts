@@ -1,3 +1,4 @@
+import { ReviewStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 const submitRentalRequest = async (userId: string, propertyId: string) => {
@@ -45,6 +46,7 @@ const getRentalRequest = async (userId: string, isAdmin: boolean, requestId: str
             property: {
                 include: {
                     reviews: {
+                        where: { status: ReviewStatus.APPROVED },
                         include: {
                             reviewer: {
                                 omit: { password: true }

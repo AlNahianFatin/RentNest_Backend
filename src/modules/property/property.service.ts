@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { IPropertyQuery } from "./property.interface";
 import { PropertyWhereInput } from "../../../generated/prisma/models";
-import { PropertyStatus } from "../../../generated/prisma/enums";
+import { PropertyStatus, ReviewStatus } from "../../../generated/prisma/enums";
 
 const getProperties = async (query: IPropertyQuery) => {
     const limit = query.limit ? Number(query.limit) : 10;
@@ -49,6 +49,7 @@ const getProperties = async (query: IPropertyQuery) => {
                         omit: { password: true }
                     },
                     reviews: {
+                        where: { status: ReviewStatus.APPROVED },
                         include: {
                             reviewer: {
                                 omit: { password: true }
@@ -89,6 +90,7 @@ const getProperty = async (id: string) => {
                 omit: { password: true }
             },
             reviews: {
+                where: { status: ReviewStatus.APPROVED },
                 include: {
                     reviewer: {
                         omit: { password: true }

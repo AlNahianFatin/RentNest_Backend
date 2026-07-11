@@ -11,13 +11,12 @@ enum Role {
 
 enum PropertyStatus {
   AVAILABLE
-  PENDING
   SOLD
 }
 
 enum RequestStatus {
-  ACCEPTED
   PENDING
+  ACCEPTED
   REJECTED
 }
 

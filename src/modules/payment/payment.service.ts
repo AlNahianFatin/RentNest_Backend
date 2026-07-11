@@ -15,14 +15,14 @@ const createSession = async (userId: string, rentalRequestId: string) => {
             include: { property: true }
         });
 
-        if (rentalRequest.tenantId !== userId)
-            throw new Error("You are not accepted as paying tenant. Only the accepted tenant may pay to rent.");
-
         if (rentalRequest.status === RequestStatus.PENDING)
             throw new Error("Your request is still pending. Please wait for the landlord to accept it.");
 
         if (rentalRequest.status === RequestStatus.REJECTED)
-            throw new Error("Sorry! Your request has been rejected. You can request other rentals.");
+            throw new Error("Sorry! Your request has been rejected. You may request other rentals.");
+
+        if (rentalRequest.tenantId !== userId)
+            throw new Error("You are not accepted as paying tenant. Only the accepted tenant may pay to rent.");
 
         const previousPayment = await tx.payment.findFirst({
             where: { userId },

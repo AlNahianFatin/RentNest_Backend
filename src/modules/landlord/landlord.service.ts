@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { ICreateProperty, IUpdateProperty } from "./landlord.interface";
-import { RequestStatus } from "../../../generated/prisma/enums";
+import { PaymentStatus, PropertyStatus, RequestStatus, ReviewStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 
 const createProperty = async (userId: string, payload: ICreateProperty) => {
@@ -65,7 +65,7 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
         let stripePrice;
         // checking if price has been updated or not
         if (payload?.price !== property.price) {
-            // deactivating previous stripr price
+            // deactivating previous stripe price if price is updated
             await stripe.prices.update(property.stripePriceId, { active: false });
 
             // creating new stripe price
@@ -86,6 +86,9 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
             include: {
                 landlord: {
                     omit: { password: true }
+                },
+                reviews: {
+                    where: { status: ReviewStatus.APPROVED }
                 },
                 type: true
             }
@@ -119,7 +122,7 @@ const getRequests = async (userId: string) => {
             await prisma.rentalRequest.findMany({
                 where: {
                     landlordId: userId,
-                    status: RequestStatus.PENDING
+                    status: RequestStatus.PENDING && RequestStatus.REJECTED
                 },
                 include: {
                     property: true,
@@ -152,12 +155,26 @@ const manageRequest = async (userId: string, requestId: string, status: RequestS
     if (status === RequestStatus.PENDING)
         throw new Error("You must accept or reject a request.");
 
-    const result = await prisma.rentalRequest.update({
-        where: { id: requestId },
-        data: { status }
+    if (status === rentalRequest.status)
+        throw new Error("Change rental request status to update");
+
+    const transactionResult = await prisma.$transaction(async (tx) => {
+        if (status === RequestStatus.ACCEPTED) {
+            await tx.payment.update({
+                where: { id: rentalRequest.propertyId },
+                data: { status: PaymentStatus.PENDING }
+            });
+        }
+
+        const result = await tx.rentalRequest.update({
+            where: { id: requestId },
+            data: { status }
+        });
+
+        return result;
     });
-    
-    return result;
+
+    return transactionResult;
 }
 
 export const landlordService = {
