@@ -19,10 +19,10 @@ const submitRentalRequest = catchAsync(async (req: Request, res: Response, next:
     });
 })
 
-const getRentalRequests = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const getMyRentalRequests = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id as string;
 
-    const result = await rentalService.getRentalRequests(userId);
+    const result = await rentalService.getMyRentalRequests(userId);
 
     if (result.length === 0) {
         sendResponse(res, {
@@ -58,6 +58,6 @@ const getRentalRequest = catchAsync(async (req: Request, res: Response, next: Ne
 
 export const rentalController = {
     submitRentalRequest,
-    getRentalRequests,
+    getMyRentalRequests,
     getRentalRequest
 };

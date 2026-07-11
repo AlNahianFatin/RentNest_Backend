@@ -23,7 +23,7 @@ const submitRentalRequest = async (userId: string, propertyId: string) => {
     return result;
 }
 
-const getRentalRequests = async (userId: string) => {
+const getMyRentalRequests = async (userId: string) => {
     const result = await prisma.rentalRequest.findMany({
         where: { tenantId: userId },
         include: {
@@ -71,6 +71,6 @@ const getRentalRequest = async (userId: string, isAdmin: boolean, requestId: str
 
 export const rentalService = {
     submitRentalRequest,
-    getRentalRequests,
+    getMyRentalRequests,
     getRentalRequest
 };

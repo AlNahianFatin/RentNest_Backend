@@ -7,7 +7,7 @@ const router = Router();
 
 router.post("/", auth(Role.TENANT), rentalController.submitRentalRequest);
 
-router.get("/", auth(Role.TENANT), rentalController.getRentalRequests);
+router.get("/", auth(Role.TENANT), rentalController.getMyRentalRequests);
 
 router.get("/:id", auth(Role.ADMIN, Role.TENANT), rentalController.getRentalRequest);
 
