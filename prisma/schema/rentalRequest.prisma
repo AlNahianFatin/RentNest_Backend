@@ -12,8 +12,6 @@ model RentalRequest {
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, propertyId])
-  @@unique([landlordId, propertyId])
   @@index([tenantId])
   @@index([landlordId])
   @@index([propertyId])
