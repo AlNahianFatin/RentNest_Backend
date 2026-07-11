@@ -35,7 +35,7 @@ const getProperties = async (query: IPropertyQuery) => {
     if (query.type)
         andConditions.push({ type: query.type });
 
-    andConditions.push({ status: PropertyStatus.AVAILABLE })
+    // andConditions.push({ status: PropertyStatus.AVAILABLE });
 
     const transactionResult = await prisma.$transaction(async (tx) => {
         const [properties, totalPropertyCount] = await Promise.all([
