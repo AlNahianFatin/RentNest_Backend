@@ -15,7 +15,6 @@ const getProperties = async (query: IPropertyQuery) => {
 
     if (query.search) {
         andConditions.push({
-            // searching
             OR: [
                 {
                     location: {

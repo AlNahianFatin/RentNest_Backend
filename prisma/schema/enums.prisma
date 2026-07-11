@@ -1,6 +1,6 @@
 enum ActiveStatus {
   ACTIVE
-  BLOCKED
+  BANNED
 }
 
 enum Role {
@@ -8,12 +8,6 @@ enum Role {
   LANDLORD
   ADMIN
 }
-
-// enum PropertyType {
-//   APARTMENT
-//   HOUSE
-//   STUDIO
-// }
 
 enum PropertyStatus {
   AVAILABLE
