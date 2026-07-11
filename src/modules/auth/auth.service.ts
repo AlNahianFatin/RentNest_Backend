@@ -4,6 +4,7 @@ import { ILoginUser, IRegisterUser } from "./auth.interface";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
 import config from "../../config";
 import { jwtUtils } from "../../utils/jwt";
+import { ActiveStatus } from "../../../generated/prisma/enums";
 
 const registerUser = async (payload: IRegisterUser) => {
     let { name, email, password, role } = payload;
@@ -25,8 +26,8 @@ const loginUser = async (payload: ILoginUser) => {
 
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
 
-    if (user.activeStatus === "BLOCKED")
-        throw new Error("Your account is blocked. Please contact support.");
+    if (user.activeStatus === ActiveStatus.BANNED)
+        throw new Error("Your account is banned. Please contact support.");
 
     const isPasswordMatched = await bcrypt.compare(password, user.password);
 
@@ -57,8 +58,8 @@ const refreshToken = async (refreshToken: string) => {
 
     const user = await prisma.user.findUniqueOrThrow({ where: { id } });
 
-    if (user.activeStatus === "BLOCKED")
-        throw new Error("Your account is blocked. Please contact support.");
+    if (user.activeStatus === ActiveStatus.BANNED)
+        throw new Error("Your account is banned. Please contact support.");
 
     const jwtPayload = {
         id: user.id,
