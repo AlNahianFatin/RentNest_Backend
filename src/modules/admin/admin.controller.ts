@@ -87,9 +87,23 @@ const getRentalRequests = catchAsync(async (req: Request, res: Response, next: N
     });
 });
 
+const createCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { propertyType } = req?.body;
+
+    const result = await adminService.createCategory(propertyType);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: `Property category ${propertyType} created successfully`,
+        data: result
+    });
+});
+
 export const adminController = {
     getUsers,
     updateUserStatus,
     getProperties,
-    getRentalRequests
+    getRentalRequests,
+    createCategory
 };

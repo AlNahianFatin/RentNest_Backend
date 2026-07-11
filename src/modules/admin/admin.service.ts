@@ -231,9 +231,27 @@ const getRentalRequests = async (query: IRentalRequestQuery) => {
     };
 };
 
+const createCategory = async (propertyType: string) => {
+    propertyType = propertyType.trim().toUpperCase();
+
+    const previousCategory = await prisma.category.findUnique({
+        where: { propertyType }
+    });
+
+    if (previousCategory)
+        throw new Error(`Property category ${propertyType} already exists`);
+
+    const result = await prisma.category.create({
+        data: { propertyType }
+    });
+
+    return result;
+}
+
 export const adminService = {
     getUsers,
     updateUserStatus,
     getProperties,
-    getRentalRequests
+    getRentalRequests,
+    createCategory
 };

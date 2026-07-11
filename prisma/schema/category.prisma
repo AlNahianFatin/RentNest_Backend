@@ -6,5 +6,6 @@ model Category {
 
   properties Property[]
 
+  @@index([propertyType])
   @@map("categories")
 }

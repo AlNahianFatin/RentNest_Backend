@@ -13,4 +13,6 @@ router.get("/properties", auth(Role.ADMIN), adminController.getProperties);
 
 router.get("/rentals", auth(Role.ADMIN), adminController.getRentalRequests);
 
+router.post("/categories", auth(Role.ADMIN), adminController.createCategory);
+
 export const adminRoutes = router;
