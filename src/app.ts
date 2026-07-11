@@ -21,9 +21,9 @@ app.use(cors({
     credentials: true
 }));
 
-// app.use("/api/subscriptions/webhook", express.raw({ type: "application/json" }), (req, res, next) => {
-//     next();
-// });
+app.use("/api/payments/confirm", express.raw({ type: "application/json" }), (req, res, next) => {
+    next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -29,7 +29,7 @@ const getUsers = catchAsync(async (req: Request, res: Response, next: NextFuncti
 
 const updateUserStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params?.id as string;
-    const updatedStatus: ActiveStatus = req.body;
+    const updatedStatus: ActiveStatus = req.body.status;
 
     const result = await adminService.updateUserStatus(userId, updatedStatus);
 
@@ -95,7 +95,7 @@ const createCategory = catchAsync(async (req: Request, res: Response, next: Next
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
-        message: `Property category ${propertyType} created successfully`,
+        message: `Property category ${propertyType.trim().toUpperCase()} created successfully`,
         data: result
     });
 });

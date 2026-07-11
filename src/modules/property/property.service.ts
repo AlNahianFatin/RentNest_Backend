@@ -76,7 +76,7 @@ const getProperties = async (query: IPropertyQuery) => {
         meta: {
             page: page,
             limit: limit,
-            totalPostCount: transactionResult.totalPropertyCount,
+            totalPropertyCount: transactionResult.totalPropertyCount,
             totalPageCount: Math.ceil(transactionResult.totalPropertyCount / limit)
         }
     };

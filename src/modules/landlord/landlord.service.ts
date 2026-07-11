@@ -4,14 +4,31 @@ import { PaymentStatus, PropertyStatus, RequestStatus, ReviewStatus } from "../.
 import { stripe } from "../../lib/stripe";
 
 const createProperty = async (userId: string, payload: ICreateProperty) => {
-    payload.houseNo = Number(payload.houseNo);
-    payload.roadNo = Number(payload.roadNo);
-    payload.price = Number(payload.price);
+    if (!Number.isInteger(payload.houseNo))
+        throw new Error("House No must be integer");
+
+    if (!Number.isInteger(payload.roadNo))
+        throw new Error("Road No must be integer");
+
+    if (!Number.isInteger(payload.price))
+        throw new Error("Price must be integer");
+
+    if (payload.price <= 0)
+        throw new Error("Invalid price");
+
+    if (payload.price > Math.floor(99999999 / 100))
+        throw new Error(`Price too large, Price cannot exceed ${Math.floor(99999999 / 100)}`);
 
     const transactionResult = await prisma.$transaction(async (tx) => {
+        // getting the category name
+        const categoryName = await tx.category.findUniqueOrThrow({
+            where: { id: payload.categoryId },
+            select: { propertyType: true }
+        });
+
         // creating stripe product
         const stripeProduct = await stripe.products.create({
-            name: `Property houseNo${payload.houseNo} roadNo${payload.roadNo}`,
+            name: `${categoryName.propertyType} houseNo${payload.houseNo} roadNo${payload.roadNo}`,
             description: payload.location,
         });
 
@@ -43,9 +60,26 @@ const createProperty = async (userId: string, payload: ICreateProperty) => {
 }
 
 const updateProperty = async (userId: string, propertyId: string, payload: IUpdateProperty) => {
-    payload.houseNo = Number(payload.houseNo);
-    payload.roadNo = Number(payload.roadNo);
-    payload.price = Number(payload.price);
+    if (payload.houseNo) {
+        if (!Number.isInteger(payload.houseNo))
+            throw new Error("House No must be integer");
+    }
+
+    if (payload.roadNo) {
+        if (!Number.isInteger(payload.roadNo))
+            throw new Error("Road No must be integer");
+    }
+
+    if (payload.price) {
+        if (!Number.isInteger(payload.price))
+            throw new Error("Price must be integer");
+
+        if (payload.price <= 0)
+            throw new Error("Invalid price");
+
+        if (payload.price >= Math.floor(99999999 / 100))
+            throw new Error(`Price too large, Price cannot exceed ${Math.floor(99999999 / 100)}`);
+    }
 
     // fetching previous record first to get the stripe product id
     const property = await prisma.property.findUniqueOrThrow({
@@ -56,9 +90,15 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
         throw new Error("You are not the owner of the property. So you can not update it.");
 
     const transactionResult = await prisma.$transaction(async (tx) => {
+        // getting the category name
+        const categoryName = await tx.category.findUniqueOrThrow({
+            where: { id: payload.categoryId },
+            select: { propertyType: true }
+        });
+
         // updating stripe product
         const stripeProduct = await stripe.products.update(property.stripeProductId, {
-            name: `Property houseNo${payload.houseNo} roadNo${payload.roadNo}`,
+            name: `${categoryName.propertyType} houseNo${payload.houseNo} roadNo${payload.roadNo}`,
             description: payload.location,
         });
 
@@ -122,7 +162,7 @@ const getRequests = async (userId: string) => {
             await prisma.rentalRequest.findMany({
                 where: {
                     landlordId: userId,
-                    status: RequestStatus.PENDING && RequestStatus.REJECTED
+                    status: RequestStatus.PENDING || RequestStatus.REJECTED
                 },
                 include: {
                     property: true,
@@ -160,9 +200,9 @@ const manageRequest = async (userId: string, requestId: string, status: RequestS
 
     const transactionResult = await prisma.$transaction(async (tx) => {
         if (status === RequestStatus.ACCEPTED) {
-            await tx.payment.update({
-                where: { id: rentalRequest.propertyId },
-                data: { status: PaymentStatus.PENDING }
+            await tx.rentalRequest.updateMany({
+                where: { id: requestId },
+                data: { status: RequestStatus.REJECTED }
             });
         }
 

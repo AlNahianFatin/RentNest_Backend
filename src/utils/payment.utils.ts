@@ -6,6 +6,7 @@ import { PaymentStatus, PropertyStatus } from "../../generated/prisma/enums";
 export const handleCheckoutCompleted = async (session: Stripe.Checkout.Session) => {
     const userId = session.metadata?.userId;
     const rentalRequestId = session.metadata?.rentalRequestId!;
+    const propertyId = session.metadata?.propertyId!;
 
     const stripeCustomerId = session.customer as string;
     const stripePaymentId = session.payment_intent as string;
@@ -15,7 +16,19 @@ export const handleCheckoutCompleted = async (session: Stripe.Checkout.Session) 
         return;
     }
 
+    if (session.payment_status !== "paid") {
+        console.log("Payment not completed.");
+        return;
+    }
+
     await prisma.$transaction(async (tx) => {
+        const property = await tx.property.findUniqueOrThrow({
+            where: { id: propertyId }
+        });
+
+        if (property.status === PropertyStatus.SOLD)
+            throw new Error("Property already rented.");
+
         await tx.payment.upsert({
             where: { stripePaymentId },
             create: {

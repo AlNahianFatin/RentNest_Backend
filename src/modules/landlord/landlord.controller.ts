@@ -14,7 +14,7 @@ const createProperty = catchAsync(async (req: Request, res: Response, next: Next
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
-        message: "Properties retrieved successfully",
+        message: "Property created successfully",
         data: result
     });
 });

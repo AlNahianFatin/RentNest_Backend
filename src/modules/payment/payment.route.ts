@@ -7,7 +7,7 @@ const router = Router();
 
 router.post("/create", auth(Role.TENANT), paymentController.createSession);
 
-router.post("/confirm", auth(Role.TENANT), paymentController.confirmPayment);
+router.post("/confirm", paymentController.confirmPayment);
 
 router.get("/", auth(Role.TENANT), paymentController.getPaymentHistory);
 

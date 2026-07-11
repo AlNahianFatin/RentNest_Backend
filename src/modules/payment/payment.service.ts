@@ -53,7 +53,8 @@ const createSession = async (userId: string, rentalRequestId: string) => {
             cancel_url: `${config.app_url}/payment?success=false`,
             metadata: {
                 userId,
-                rentalRequestId
+                rentalRequestId,
+                propertyId: rentalRequest.propertyId
             }
         });
 
@@ -117,11 +118,11 @@ const getPaymentDetails = async (userId: string, isAdmin: boolean, paymentId: st
                         include: {
                             landlord: {
                                 omit: { password: true }
-                            }
+                            },
+                            type: true
                         },
-                        type: true
                     },
-                    user: {
+                    tenant: {
                         omit: { password: true }
                     }
                 }

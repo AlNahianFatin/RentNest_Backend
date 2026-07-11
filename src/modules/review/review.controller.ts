@@ -8,6 +8,7 @@ import { IReviewPayload } from "./review.interface";
 const createReview = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id as string;
     const payload: IReviewPayload = req.body;
+    console.log(userId)
 
     const result = await reviewService.createReview(userId, payload);
 
@@ -26,8 +27,8 @@ const manageReview = catchAsync(async (req: Request, res: Response, next: NextFu
 
     sendResponse(res, {
         success: true,
-        statusCode: httpStatus.CREATED,
-        message: "Rating posted successfully",
+        statusCode: httpStatus.OK,
+        message: `Rating status updated to ${status} successfully`,
         data: result
     });
 });

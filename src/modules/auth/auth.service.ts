@@ -24,7 +24,10 @@ const registerUser = async (payload: IRegisterUser) => {
 const loginUser = async (payload: ILoginUser) => {
     const { email, password } = payload;
 
-    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user)
+        throw new Error(`No user account found for email '${email}'`);
 
     if (user.activeStatus === ActiveStatus.BANNED)
         throw new Error("Your account is banned. Please contact support.");

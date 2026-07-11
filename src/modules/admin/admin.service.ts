@@ -76,7 +76,7 @@ const getUsers = async (query: IUserQuery) => {
         meta: {
             page: page,
             limit: limit,
-            totalPostCount: transactionResult.totalUserCount,
+            totalUserCount: transactionResult.totalUserCount,
             totalPageCount: Math.ceil(transactionResult.totalUserCount / limit)
         }
     };
@@ -171,7 +171,7 @@ const getProperties = async (query: IPropertyQuery) => {
         meta: {
             page: page,
             limit: limit,
-            totalPostCount: transactionResult.totalPropertyCount,
+            totalPropertyCount: transactionResult.totalPropertyCount,
             totalPageCount: Math.ceil(transactionResult.totalPropertyCount / limit)
         }
     };
@@ -225,7 +225,7 @@ const getRentalRequests = async (query: IRentalRequestQuery) => {
         meta: {
             page: page,
             limit: limit,
-            totalPostCount: transactionResult.totalRentalRequestCount,
+            totalRentalRequestCount: transactionResult.totalRentalRequestCount,
             totalPageCount: Math.ceil(transactionResult.totalRentalRequestCount / limit)
         }
     };
