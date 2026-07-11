@@ -4,7 +4,7 @@ model Payment {
     status PaymentStatus @default(PENDING)
 
     // stripe related ids
-    stripeCustomerId String 
+    stripeCustomerId String
     stripePaymentId  String @unique
 
     rentalRequestId String        @unique

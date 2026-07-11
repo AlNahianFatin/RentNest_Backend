@@ -10,8 +10,8 @@ model Review {
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
+  @@unique([reviewerId, propertyId])
   @@index([reviewerId])
   @@index([propertyId])
-  @@unique([reviewerId, propertyId])
   @@map("reviews")
 }

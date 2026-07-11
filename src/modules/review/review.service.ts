@@ -1,0 +1,57 @@
+import { prisma } from "../../lib/prisma";
+import { IReviewPayload } from "./review.interface";
+import { PaymentStatus } from "../../../generated/prisma/enums";
+
+const createReview = async (userId: string, payload: IReviewPayload) => {
+    const { propertyId } = payload;
+
+    if (!Number.isInteger(payload.rating))
+        throw new Error("Rating must be an integer.");
+
+    if (payload.rating < 1 || payload.rating > 5)
+        throw new Error("Rating must be between 1 and 5.");
+
+    const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
+        where: {
+            tenantId_propertyId: {
+                tenantId: userId,
+                propertyId
+            }
+        },
+        include: {
+            payment: {
+                select: { status: true }
+            }
+        }
+    });
+
+    if (rentalRequest.payment?.status !== PaymentStatus.COMPLETED)
+        throw new Error("Please complete your payment first to proceed with the review");
+
+    const existingReview = await prisma.review.findUnique({
+        where: {
+            reviewerId_propertyId: {
+                reviewerId: userId,
+                propertyId
+            }
+        }
+    });
+
+    if (existingReview)
+        throw new Error("You have already reviewed this property.");
+
+    const result = await prisma.review.create({
+        data: {
+            rating: payload.rating,
+            comment: payload?.comment,
+            propertyId,
+            reviewerId: userId
+        }
+    });
+
+    return result;
+};
+
+export const reviewService = {
+    createReview
+};

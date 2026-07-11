@@ -1,0 +1,25 @@
+import { NextFunction, Request, Response } from "express";
+import { catchAsync } from "../../utils/catchAsync";
+import { reviewService } from "./review.service";
+import { sendResponse } from "../../utils/sendResponse";
+import httpStatus from "http-status";
+import { IReviewPayload } from "./review.interface";
+
+const createReview = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id as string;
+    // const propertyId = req.params?.id as string;
+    const payload: IReviewPayload = req.body;
+
+    const result = await reviewService.createReview(userId, payload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "Rating posted successfully",
+        data: result
+    });
+});
+
+export const reviewController = {
+    createReview
+};
