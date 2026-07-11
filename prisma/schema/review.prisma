@@ -1,7 +1,7 @@
 model Review {
   id        String       @id @default(uuid())
   rating    Int
-  comment   String?
+  comment   String?      @db.Text
   status    ReviewStatus @default(APPROVED)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt

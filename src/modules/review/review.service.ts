@@ -11,12 +11,10 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     if (payload.rating < 1 || payload.rating > 5)
         throw new Error("Rating must be between 1 and 5.");
 
-    const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
+    const rentalRequest = await prisma.rentalRequest.findFirst({
         where: {
-            tenantId_propertyId: {
-                tenantId: userId,
-                propertyId
-            }
+            tenantId: userId,
+            propertyId
         },
         include: {
             payment: {
@@ -24,6 +22,9 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
             }
         }
     });
+
+    if (!rentalRequest)
+        throw new Error("Could not find the rental request. Check again");
 
     if (rentalRequest.payment?.status !== PaymentStatus.COMPLETED)
         throw new Error("Please complete your payment first to proceed with the review");
