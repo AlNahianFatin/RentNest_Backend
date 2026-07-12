@@ -38,6 +38,15 @@ const getPaymentHistory = catchAsync(async (req: Request, res: Response, next: N
 
     const result = await paymentService.getPaymentHistory(userId);
 
+    if (result.length === 0) {
+        sendResponse(res, {
+            success: false,
+            statusCode: httpStatus.NOT_FOUND,
+            message: "No payment record found",
+            data: null
+        });
+    }
+
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

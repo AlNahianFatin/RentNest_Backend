@@ -1,8 +1,8 @@
 import { prisma } from "../../lib/prisma";
-import { RequestStatus } from "../../../generated/prisma/enums";
+import { PropertyStatus, RequestStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
-import { handleCheckoutCompleted, handleFailedOrExpiredPayment } from "../../utils/payment.utils";
+import { handleCheckoutCompleted, handleInvoicePaymentFailed, handleInvoicePaymentSucceeded, handleSubscriptionDeleted, handleSubscriptionUpdated } from "../../utils/payment.utils";
 
 const createSession = async (userId: string, rentalRequestId: string) => {
     const transactionResult = await prisma.$transaction(async (tx) => {
@@ -24,9 +24,12 @@ const createSession = async (userId: string, rentalRequestId: string) => {
         if (rentalRequest.tenantId !== userId)
             throw new Error("You are not accepted as paying tenant. Only the accepted tenant may pay to rent.");
 
+        if (rentalRequest.property.status === PropertyStatus.RENTED)
+            throw new Error("This property is already rented.");
+
         const previousPayment = await tx.payment.findFirst({
             where: { userId },
-            orderBy: { paidAt: "desc" }
+            orderBy: { updatedAt: "desc" }
         });
 
         let stripeCustomerId: string;
@@ -46,7 +49,7 @@ const createSession = async (userId: string, rentalRequestId: string) => {
                 price: rentalRequest.property.stripePriceId,
                 quantity: 1
             }],
-            mode: "payment",
+            mode: "subscription",
             customer: stripeCustomerId,
             payment_method_types: ["card"],
             success_url: `${config.app_url}/payment?success=true`,
@@ -76,16 +79,29 @@ const confirmPayment = async (payload: Buffer, signature: string) => {
     // console.log(event.data.object);
 
     switch (event.type) {
+        // First successful checkout
         case 'checkout.session.completed':
             await handleCheckoutCompleted(event.data.object);
             break;
 
-        case 'checkout.session.async_payment_failed':
-            await handleFailedOrExpiredPayment(event.data.object);
+        // Every successful monthly renewal
+        case "invoice.payment_succeeded":
+            await handleInvoicePaymentSucceeded(event.data.object);
             break;
 
-        case 'checkout.session.expired':
-            await handleFailedOrExpiredPayment(event.data.object);
+        // Renewal payment failed
+        case "invoice.payment_failed":
+            await handleInvoicePaymentFailed(event.data.object);
+            break;
+
+        // Subscription updated
+        case 'customer.subscription.updated':
+            await handleSubscriptionUpdated(event.data.object);
+            break;
+
+        // Subscription deleted
+        case 'customer.subscription.deleted':
+            await handleSubscriptionDeleted(event.data.object);
             break;
 
         default:
@@ -102,7 +118,7 @@ const getPaymentHistory = async (userId: string) => {
                 include: { property: true }
             }
         },
-        orderBy: { paidAt: "desc" }
+        orderBy: { updatedAt: "desc" }
     });
 
     return result;

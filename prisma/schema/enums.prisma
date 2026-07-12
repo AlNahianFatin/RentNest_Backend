@@ -11,7 +11,7 @@ enum Role {
 
 enum PropertyStatus {
   AVAILABLE
-  SOLD
+  RENTED
 }
 
 enum RequestStatus {
@@ -29,4 +29,10 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
+}
+
+enum RentalStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
 }

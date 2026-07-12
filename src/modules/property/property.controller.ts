@@ -13,7 +13,7 @@ const getProperties = catchAsync(async (req: Request, res: Response, next: NextF
         sendResponse(res, {
             success: false,
             statusCode: httpStatus.NOT_FOUND,
-            message: "No property found for sale at the moment",
+            message: "No property found at the moment",
             data: null
         });
     }

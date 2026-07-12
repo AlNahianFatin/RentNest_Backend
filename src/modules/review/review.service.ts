@@ -14,11 +14,11 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     const rentalRequest = await prisma.rentalRequest.findFirst({
         where: {
             tenantId: userId,
-            propertyId
+            propertyId,
         },
         include: {
             payment: {
-                select: { status: true }
+                select: { paymentStatus: true }
             }
         }
     });
@@ -26,7 +26,7 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     if (!rentalRequest)
         throw new Error("Could not find the rental request. Check again");
 
-    if (rentalRequest.payment?.status !== PaymentStatus.COMPLETED)
+    if (rentalRequest.payment?.paymentStatus !== PaymentStatus.COMPLETED)
         throw new Error("Please complete your payment first to proceed with the review");
 
     const existingReview = await prisma.review.findUnique({

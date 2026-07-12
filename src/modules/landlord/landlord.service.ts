@@ -37,6 +37,7 @@ const createProperty = async (userId: string, payload: ICreateProperty) => {
             product: stripeProduct.id,
             unit_amount: Number(payload.price) * 100,
             currency: "bdt",
+            recurring: { interval: "month" }
         });
 
         // inserting property
@@ -83,7 +84,8 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
 
     // fetching previous record first to get the stripe product id
     const property = await prisma.property.findUniqueOrThrow({
-        where: { id: propertyId }
+        where: { id: propertyId },
+        include: { type: true }
     });
 
     if (userId !== property.landlordId)
@@ -91,14 +93,18 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
 
     const transactionResult = await prisma.$transaction(async (tx) => {
         // getting the category name
-        const categoryName = await tx.category.findUniqueOrThrow({
-            where: { id: payload.categoryId },
-            select: { propertyType: true }
-        });
+        let categoryName = property.type.propertyType;
+        if (payload.categoryId) {
+            const category = await tx.category.findUniqueOrThrow({
+                where: { id: payload.categoryId },
+                select: { propertyType: true }
+            });
+            categoryName = category.propertyType;
+        }
 
         // updating stripe product
         const stripeProduct = await stripe.products.update(property.stripeProductId, {
-            name: `${categoryName.propertyType} houseNo${payload.houseNo} roadNo${payload.roadNo}`,
+            name: `${categoryName} houseNo${payload.houseNo} roadNo${payload.roadNo}`,
             description: payload.location,
         });
 
@@ -113,6 +119,7 @@ const updateProperty = async (userId: string, propertyId: string, payload: IUpda
                 product: stripeProduct.id,
                 unit_amount: Number(payload.price) * 100,
                 currency: "bdt",
+                recurring: { interval: "month" }
             });
         }
 
