@@ -6,7 +6,6 @@ const getCategories = async () => {
             _count: true
         }
     });
-    console.log(result);
 
     return result;
 }

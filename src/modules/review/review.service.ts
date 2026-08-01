@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { IReviewPayload } from "./review.interface";
 import { PaymentStatus, ReviewStatus } from "../../../generated/prisma/enums";
+import { Prisma } from "../../../generated/prisma/client";
 
 const createReview = async (userId: string, payload: IReviewPayload) => {
     const { propertyId } = payload;
@@ -41,32 +42,91 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     if (existingReview)
         throw new Error("You have already reviewed this property.");
 
-    const result = await prisma.review.create({
-        data: {
-            rating: payload.rating,
-            comment: payload?.comment,
-            propertyId,
-            reviewerId: userId
-        }
+    // const result = await prisma.review.create({
+    //     data: {
+    //         rating: payload.rating,
+    //         comment: payload?.comment,
+    //         propertyId,
+    //         reviewerId: userId
+    //     }
+    // });
+
+    const result = await prisma.$transaction(async (tx) => {
+        const review = await tx.review.create({
+            data: {
+                rating: payload.rating,
+                comment: payload?.comment,
+                propertyId,
+                reviewerId: userId
+            }
+        });
+
+        const aggregate = await tx.review.aggregate({
+            where: {
+                propertyId,
+                status: ReviewStatus.APPROVED,
+            },
+            _avg: { rating: true }
+        });
+
+        const averageRating =
+            aggregate._avg.rating === null
+                ? null
+                : Number(aggregate._avg.rating.toFixed(2));
+
+        await tx.property.update({
+            where: { id: propertyId },
+            data: {
+                averageRating: new Prisma.Decimal(aggregate._avg.rating ?? 0),
+            },
+        });
+
+        return { review };
     });
 
     return result;
 };
 
 const manageReview = async (reviewId: string, status: ReviewStatus) => {
-    const review = await prisma.review.findUniqueOrThrow({
-        where: { id: reviewId }
+    return await prisma.$transaction(async (tx) => {
+
+        const review = await tx.review.findUniqueOrThrow({
+            where: { id: reviewId }
+        });
+
+        if (review.status === status)
+            throw new Error("Change review status to update.");
+
+        const updatedReview = await tx.review.update({
+            where: { id: reviewId },
+            data: { status }
+        });
+
+        const aggregate = await tx.review.aggregate({
+            where: {
+                propertyId: review.propertyId,
+                status: ReviewStatus.APPROVED,
+            },
+            _avg: { rating: true }
+        });
+
+        const averageRating =
+            aggregate._avg.rating === null
+                ? 0
+                : Number(aggregate._avg.rating.toFixed(2));
+
+        await tx.property.update({
+            where: { id: review.propertyId },
+            data: {
+                averageRating:
+                    averageRating === null
+                        ? 0
+                        : new Prisma.Decimal(averageRating),
+            },
+        });
+
+        return updatedReview;
     });
-
-    if (status === review.status)
-        throw new Error("Change review status to update");
-
-    const result = await prisma.review.update({
-        where: { id: reviewId },
-        data: { status }
-    });
-
-    return result;
 };
 
 export const reviewService = {
