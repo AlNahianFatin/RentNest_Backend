@@ -38,10 +38,11 @@ const getProperties = async (query: IPropertyQuery) => {
     // andConditions.push({ status: PropertyStatus.AVAILABLE });
 
     const transactionResult = await prisma.$transaction(async (tx) => {
-        const [properties, totalPropertyCount, totalAvailablePropertyCount, totalRentedPropertyCount] = await Promise.all([
+        const [properties, totalAvailablePropertyCount] = await Promise.all([
             await tx.property.findMany({
                 where: {
-                    AND: andConditions
+                    AND: andConditions,
+                    status: PropertyStatus.AVAILABLE
                 },
 
                 include: {
@@ -66,13 +67,9 @@ const getProperties = async (query: IPropertyQuery) => {
             }),
 
             await tx.property.count({ where: { AND: andConditions } }),
-
-            await tx.property.count({ where: { status: PropertyStatus.AVAILABLE } }),
-
-            await tx.property.count({ where: { status: PropertyStatus.RENTED } })
         ])
 
-        return { properties, totalPropertyCount, totalAvailablePropertyCount, totalRentedPropertyCount };
+        return { properties, totalAvailablePropertyCount };
     });
 
     return {
@@ -81,9 +78,7 @@ const getProperties = async (query: IPropertyQuery) => {
             page: page,
             limit: limit,
             totalAvailablePropertyCount: transactionResult.totalAvailablePropertyCount,
-            totalRentedPropertyCount: transactionResult.totalRentedPropertyCount,
-            totalPropertyCount: transactionResult.totalPropertyCount,
-            totalPageCount: Math.ceil(transactionResult.totalPropertyCount / limit)
+            totalPageCount: Math.ceil(transactionResult.totalAvailablePropertyCount / limit)
         }
     };
 }

@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { ActiveStatus } from "../../../generated/prisma/enums";
+import { ActiveStatus, PropertyStatus } from "../../../generated/prisma/enums";
 import { IPropertyQuery, IRentalRequestQuery, IUserQuery } from "./admin.interface";
 import { PropertyWhereInput, RentalRequestWhereInput, UserWhereInput } from "../../../generated/prisma/models";
 
@@ -134,7 +134,7 @@ const getProperties = async (query: IPropertyQuery) => {
         andConditions.push({ status: query.status });
 
     const transactionResult = await prisma.$transaction(async (tx) => {
-        const [properties, totalPropertyCount] = await Promise.all([
+        const [properties, totalPropertyCount, totalAvailablePropertyCount, totalRentedPropertyCount] = await Promise.all([
             await tx.property.findMany({
                 where: {
                     AND: andConditions
@@ -160,10 +160,14 @@ const getProperties = async (query: IPropertyQuery) => {
                 skip: skip
             }),
 
-            await tx.property.count({ where: { AND: andConditions } })
+            await tx.property.count({ where: { AND: andConditions } }),
+
+            await tx.property.count({ where: { status: PropertyStatus.AVAILABLE } }),
+
+            await tx.property.count({ where: { status: PropertyStatus.RENTED } })
         ])
 
-        return { properties, totalPropertyCount };
+        return { properties, totalPropertyCount, totalAvailablePropertyCount, totalRentedPropertyCount };
     });
 
     return {
@@ -171,6 +175,8 @@ const getProperties = async (query: IPropertyQuery) => {
         meta: {
             page: page,
             limit: limit,
+            totalAvailablePropertyCount: transactionResult.totalAvailablePropertyCount,
+            totalRentedPropertyCount: transactionResult.totalRentedPropertyCount,
             totalPropertyCount: transactionResult.totalPropertyCount,
             totalPageCount: Math.ceil(transactionResult.totalPropertyCount / limit)
         }
