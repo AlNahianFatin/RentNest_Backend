@@ -14,22 +14,23 @@ const submitRentalRequest = catchAsync(async (req: Request, res: Response, next:
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.CREATED,
-        message: "Rental request submitted successfully",
+        message: "Rental request submitted successfully. Please wait for the landlord to accept it.",
         data: result
     });
 })
 
 const getMyRentalRequests = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
     const userId = req.user?.id as string;
 
-    const result = await rentalService.getMyRentalRequests(userId);
+    const result = await rentalService.getMyRentalRequests(userId, query);
 
-    if (result.length === 0) {
+    if (result.meta.totalRentalRequestCount === 0) {
         sendResponse(res, {
             success: false,
             statusCode: httpStatus.NOT_FOUND,
             message: "You have not submitted any rental request yet",
-            data: null
+            data: result
         });
     }
 
@@ -37,7 +38,32 @@ const getMyRentalRequests = catchAsync(async (req: Request, res: Response, next:
         success: true,
         statusCode: httpStatus.OK,
         message: "Rental requests retrieved successfully",
-        data: result
+        data: result.data,
+        meta: result.meta
+    });
+});
+
+const getMyRents = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req?.query;
+    const userId = req.user?.id as string;
+
+    const result = await rentalService.getMyRents(userId, query);
+
+    if (result.meta.totalPropertiesCount === 0) {
+        sendResponse(res, {
+            success: false,
+            statusCode: httpStatus.NOT_FOUND,
+            message: "You have not rented any property yet",
+            data: null
+        });
+    }
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Rents retrieved successfully",
+        data: result.data,
+        meta: result.meta
     });
 });
 
@@ -59,5 +85,6 @@ const getRentalRequest = catchAsync(async (req: Request, res: Response, next: Ne
 export const rentalController = {
     submitRentalRequest,
     getMyRentalRequests,
+    getMyRents,
     getRentalRequest
 };

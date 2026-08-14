@@ -104,30 +104,45 @@ export const handleInvoicePaymentFailed = async (invoice: Stripe.Invoice) => {
 };
 
 export const handleSubscriptionUpdated = async (subscription: Stripe.Subscription) => {
-    let rentalStatus: RentalStatus;
+    let rentalStatus: RentalStatus = RentalStatus.ACTIVE;
+    let propertyStatus: PropertyStatus = PropertyStatus.RENTED;
 
     switch (subscription.status) {
         case "active":
         case "trialing":
             rentalStatus = RentalStatus.ACTIVE;
+            propertyStatus = PropertyStatus.RENTED;
             break;
 
         case "canceled":
             rentalStatus = RentalStatus.CANCELED;
+            propertyStatus = PropertyStatus.AVAILABLE;
             break;
 
         default:
             rentalStatus = RentalStatus.EXPIRED;
+            propertyStatus = PropertyStatus.AVAILABLE;
     }
 
-    await prisma.payment.update({
-        where: { stripeSubscriptionId: subscription.id },
-        data: {
-            rentalStatus,
+    await prisma.$transaction(async (tx) => {
+        const payment = await tx.payment.update({
+            where: { stripeSubscriptionId: subscription.id },
+            data: {
+                rentalStatus,
+                currentPeriodEnd: getStripePeriodEnd(subscription)
+            },
+            include: {
+                rentalRequest: {
+                    include: { property: true }
+                }
+            }
+        });
 
-            currentPeriodEnd: getStripePeriodEnd(subscription)
-        }
-    });
+        await tx.property.update({
+            where: { id: payment.rentalRequest.propertyId },
+            data: { status: propertyStatus }
+        })
+    })
 };
 
 export const handleSubscriptionDeleted = async (subscription: Stripe.Subscription) => {
@@ -144,9 +159,7 @@ export const handleSubscriptionDeleted = async (subscription: Stripe.Subscriptio
 
         await tx.property.update({
             where: { id: payment.rentalRequest.propertyId },
-            data: {
-                status: PropertyStatus.AVAILABLE
-            }
+            data: { status: PropertyStatus.AVAILABLE }
         });
     });
 };

@@ -1,5 +1,5 @@
 export interface IReviewPayload {
     rating: number;
-    comment: string;
+    comment?: string;
     propertyId: string;
 }

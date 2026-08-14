@@ -1,7 +1,8 @@
 import { prisma } from "../../lib/prisma";
-import { ActiveStatus, PropertyStatus } from "../../../generated/prisma/enums";
+import { ActiveStatus, PropertyStatus, RequestStatus, ReviewStatus, Role } from "../../../generated/prisma/enums";
 import { IPropertyQuery, IRentalRequestQuery, IUserQuery } from "./admin.interface";
 import { PropertyWhereInput, RentalRequestWhereInput, UserWhereInput } from "../../../generated/prisma/models";
+import { Prisma } from "../../../generated/prisma/client";
 
 const getUsers = async (query: IUserQuery) => {
     const limit = query.limit ? Number(query.limit) : 10;
@@ -32,52 +33,82 @@ const getUsers = async (query: IUserQuery) => {
         })
     }
 
-    if (query.activeStatus)
-        andConditions.push({ activeStatus: query.activeStatus });
+    if (query.status)
+        andConditions.push({ status: query.status });
 
     if (query.role)
         andConditions.push({ role: query.role });
 
-    const transactionResult = await prisma.$transaction(async (tx) => {
-        const [users, totalUserCount] = await Promise.all([
-            await tx.user.findMany({
-                where: {
-                    AND: andConditions
-                },
+    const [users,
+        totalAdminCount,
+        totalLandlordCount,
+        totalTenantCount,
+        totalActiveUsersCount,
+        totalBannedUsersCount,
+        totalUsersCount
+    ] = await Promise.all([
+        prisma.user.findMany({
+            where: { AND: andConditions },
 
-                include: {
-                    properties: true,
-                    payments: true,
-                    reviews: {
-                        include: {
-                            reviewer: {
-                                omit: { password: true }
-                            }
+            omit: { password: true },
+
+            include: {
+                properties: true,
+                payments: true,
+                reviews: {
+                    include: {
+                        reviewer: {
+                            omit: { password: true }
                         }
-                    },
-                    tenantRequests: true,
-                    landlordRequests: true
+                    }
                 },
+                tenantRequests: true,
+                landlordRequests: true
+            },
 
-                orderBy: { [sortBy]: sortOrder },
+            orderBy: { [sortBy]: sortOrder },
 
-                take: limit,
-                skip: skip
-            }),
+            take: limit,
+            skip: skip
+        }),
 
-            await tx.user.count({ where: { AND: andConditions } })
-        ])
+        prisma.user.count({
+            where: { role: Role.ADMIN }
+        }),
 
-        return { users, totalUserCount };
-    });
+        prisma.user.count({
+            where: { role: Role.LANDLORD }
+        }),
+
+        prisma.user.count({
+            where: { role: Role.TENANT }
+        }),
+
+        prisma.user.count({
+            where: { status: ActiveStatus.ACTIVE }
+        }),
+
+        prisma.user.count({
+            where: { status: ActiveStatus.BANNED }
+        }),
+
+        prisma.user.count({
+            where: { AND: andConditions }
+        })
+    ]);
 
     return {
-        data: transactionResult.users,
+        data: users,
         meta: {
-            page: page,
-            limit: limit,
-            totalUserCount: transactionResult.totalUserCount,
-            totalPageCount: Math.ceil(transactionResult.totalUserCount / limit)
+            page,
+            limit,
+            totalAdminCount,
+            totalLandlordCount,
+            totalTenantCount,
+            totalActiveUsersCount,
+            totalBannedUsersCount,
+            totalUsersCount,
+            totalPageCount: Math.ceil(totalUsersCount / limit)
         }
     };
 };
@@ -87,12 +118,12 @@ const updateUserStatus = async (userId: string, updatedStatus: ActiveStatus) => 
         where: { id: userId }
     });
 
-    if (user.activeStatus === updatedStatus)
+    if (user.status === updatedStatus)
         throw new Error(`The user is already ${updatedStatus}.`);
 
     const result = await prisma.user.update({
         where: { id: userId },
-        data: { activeStatus: updatedStatus }
+        data: { status: updatedStatus }
     });
 
     return result;
@@ -136,14 +167,27 @@ const getProperties = async (query: IPropertyQuery) => {
     const transactionResult = await prisma.$transaction(async (tx) => {
         const [properties, totalPropertyCount, totalAvailablePropertyCount, totalRentedPropertyCount] = await Promise.all([
             await tx.property.findMany({
-                where: {
-                    AND: andConditions
-                },
+                where: { AND: andConditions },
 
                 include: {
                     landlord: {
                         omit: { password: true }
                     },
+
+                    rentalRequests: {
+                        include: {
+                            tenant: {
+                                omit: { password: true }
+                            },
+                            payment: {
+                                select: { currentPeriodEnd: true }
+                            }
+                        },
+                        orderBy: {
+                            payment: { currentPeriodEnd: "desc" }
+                        }
+                    },
+
                     reviews: {
                         include: {
                             reviewer: {
@@ -183,6 +227,27 @@ const getProperties = async (query: IPropertyQuery) => {
     };
 };
 
+const getPropertyById = async (id: string) => {
+    const result = await prisma.property.findUniqueOrThrow({
+        where: { id },
+        include: {
+            landlord: {
+                omit: { password: true }
+            },
+            reviews: {
+                include: {
+                    reviewer: {
+                        omit: { password: true }
+                    }
+                }
+            },
+            type: true
+        }
+    });
+
+    return result;
+};
+
 const getRentalRequests = async (query: IRentalRequestQuery) => {
     const limit = query.limit ? Number(query.limit) : 10;
     const page = query.page ? Number(query.page) : 1;
@@ -196,43 +261,59 @@ const getRentalRequests = async (query: IRentalRequestQuery) => {
     if (query.status)
         andConditions.push({ status: query.status });
 
-    const transactionResult = await prisma.$transaction(async (tx) => {
-        const [rentalRequests, totalRentalRequestCount] = await Promise.all([
-            await tx.rentalRequest.findMany({
-                where: {
-                    AND: andConditions
+    const [rentalRequests,
+        totalPendingRentalRequestCount,
+        totalAcceptedRentalRequestCount,
+        totalRejectedRentalRequestCount,
+        totalRentalRequestCount
+    ] = await Promise.all([
+        prisma.rentalRequest.findMany({
+            where: { AND: andConditions },
+
+            include: {
+                property: true,
+                landlord: {
+                    omit: { password: true }
                 },
-
-                include: {
-                    property: true,
-                    landlord: {
-                        omit: { password: true }
-                    },
-                    tenant: {
-                        omit: { password: true }
-                    },
-                    payment: true
+                tenant: {
+                    omit: { password: true }
                 },
+                payment: true
+            },
 
-                orderBy: { [sortBy]: sortOrder },
+            orderBy: { [sortBy]: sortOrder },
 
-                take: limit,
-                skip: skip
-            }),
+            take: limit,
+            skip: skip
+        }),
 
-            await tx.rentalRequest.count({ where: { AND: andConditions } })
-        ])
+        prisma.rentalRequest.count({
+            where: { status: RequestStatus.PENDING }
+        }),
 
-        return { rentalRequests, totalRentalRequestCount };
-    });
+        prisma.rentalRequest.count({
+            where: { status: RequestStatus.ACCEPTED }
+        }),
+
+        prisma.rentalRequest.count({
+            where: { status: RequestStatus.REJECTED }
+        }),
+
+        prisma.rentalRequest.count({
+            where: { AND: andConditions }
+        })
+    ]);
 
     return {
-        data: transactionResult.rentalRequests,
+        data: rentalRequests,
         meta: {
-            page: page,
-            limit: limit,
-            totalRentalRequestCount: transactionResult.totalRentalRequestCount,
-            totalPageCount: Math.ceil(transactionResult.totalRentalRequestCount / limit)
+            page,
+            limit,
+            totalPendingRentalRequestCount,
+            totalAcceptedRentalRequestCount,
+            totalRejectedRentalRequestCount,
+            totalRentalRequestCount,
+            totalPageCount: Math.ceil(totalRentalRequestCount / limit)
         }
     };
 };
@@ -254,10 +335,69 @@ const createCategory = async (propertyType: string) => {
     return result;
 }
 
+const updateCategory = async (categoryId: string, propertyType: string) => {
+    propertyType = propertyType.trim().toUpperCase();
+
+    const categpry = await prisma.category.findFirstOrThrow({
+        where: { id: categoryId }
+    });
+
+    const result = await prisma.category.update({
+        where: { id: categoryId },
+        data: { propertyType }
+    });
+
+    return result;
+}
+
+const manageReviewStatus = async (reviewId: string, status: ReviewStatus) => {
+    return await prisma.$transaction(async (tx) => {
+        const review = await tx.review.findUniqueOrThrow({
+            where: { id: reviewId }
+        });
+
+        if (review.status === status)
+            throw new Error("Change review status to update.");
+
+        const updatedReview = await tx.review.update({
+            where: { id: reviewId },
+            data: { status }
+        });
+
+        const aggregate = await tx.review.aggregate({
+            where: {
+                propertyId: review.propertyId,
+                status: ReviewStatus.APPROVED,
+            },
+            _avg: { rating: true }
+        });
+
+        const averageRating =
+            aggregate._avg.rating === null
+                ? 0
+                : Number(aggregate._avg.rating.toFixed(2));
+
+        await tx.property.update({
+            where: { id: review.propertyId },
+            data: {
+                averageRating:
+                    averageRating === null
+                        ? 0
+                        : new Prisma.Decimal(averageRating),
+            },
+        });
+
+        return updatedReview;
+    });
+};
+
 export const adminService = {
     getUsers,
     updateUserStatus,
     getProperties,
+    getPropertyById,
     getRentalRequests,
-    createCategory
+    createCategory,
+    updateCategory,
+    manageReviewStatus
 };

@@ -28,7 +28,7 @@ const getProperties = catchAsync(async (req: Request, res: Response, next: NextF
 })
 
 const getProperty = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const propertyId = req.params?.id as string;
+    const propertyId = req.params.id as string;
 
     const result = await propertyService.getProperty(propertyId);
 

@@ -67,6 +67,48 @@ const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFu
     });
 });
 
+const updateProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const loggedInUserId = req.user?.id as string;
+    const payload = req.body;
+
+    const result = await authService.updateProfile(loggedInUserId, payload);
+
+    res.cookie("accessToken", result.accessToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000
+    });
+
+    res.cookie("refreshToken", result.refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Profile updated successfully",
+        data: result
+    });
+})
+
+const updatePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const loggedInUserId = req.user?.id as string;
+    const payload = req.body;
+
+    const result = await authService.updatePassword(loggedInUserId, payload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Password updated successfully",
+        data: result
+    });
+})
+
 const myProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id as string;
 
@@ -84,5 +126,7 @@ export const authController = {
     registerUser,
     loginUser,
     refreshToken,
+    updateProfile,
+    updatePassword,
     myProfile
 };

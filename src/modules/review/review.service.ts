@@ -39,17 +39,12 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
         }
     });
 
-    if (existingReview)
+    if (existingReview) {
+        if (existingReview?.status === ReviewStatus.REJECTED)
+            throw new Error("You have already reviewed this property. But as the admin has rejected it, you cannot review this property anymore.");
         throw new Error("You have already reviewed this property.");
+    }
 
-    // const result = await prisma.review.create({
-    //     data: {
-    //         rating: payload.rating,
-    //         comment: payload?.comment,
-    //         propertyId,
-    //         reviewerId: userId
-    //     }
-    // });
 
     const result = await prisma.$transaction(async (tx) => {
         const review = await tx.review.create({
@@ -69,10 +64,10 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
             _avg: { rating: true }
         });
 
-        const averageRating =
-            aggregate._avg.rating === null
-                ? null
-                : Number(aggregate._avg.rating.toFixed(2));
+        // const averageRating =
+        //     aggregate._avg.rating === null
+        //         ? null
+        //         : Number(aggregate._avg.rating.toFixed(2));
 
         await tx.property.update({
             where: { id: propertyId },
@@ -87,49 +82,120 @@ const createReview = async (userId: string, payload: IReviewPayload) => {
     return result;
 };
 
-const manageReview = async (reviewId: string, status: ReviewStatus) => {
-    return await prisma.$transaction(async (tx) => {
+const updateReview = async (userId: string, reviewId: string, payload: IReviewPayload) => {
+    if (!Number.isInteger(payload.rating))
+        throw new Error("Rating must be an integer.");
 
-        const review = await tx.review.findUniqueOrThrow({
-            where: { id: reviewId }
-        });
+    if (payload.rating < 1 || payload.rating > 5)
+        throw new Error("Rating must be between 1 and 5.");
 
-        if (review.status === status)
-            throw new Error("Change review status to update.");
+    const previousReview = await prisma.review.findUniqueOrThrow({
+        where: { id: reviewId },
+        include: {
+            property: {
+                include: {
+                    rentalRequests: {
+                        where: { tenantId: userId },
+                        include: { payment: true }
+                    }
+                }
+            }
+        }
+    });
 
-        const updatedReview = await tx.review.update({
+    if (!previousReview)
+        throw new Error("Could not find the review. Please check again");
+
+    if (previousReview.reviewerId !== userId)
+        throw new Error("As you are not the reviewer, you cannot update this review");
+
+    if (previousReview.property.rentalRequests?.[0]?.payment?.paymentStatus !== PaymentStatus.COMPLETED)
+        throw new Error("Please complete your payment first to proceed with the review");
+
+    const result = await prisma.$transaction(async (tx) => {
+        const review = await tx.review.update({
             where: { id: reviewId },
-            data: { status }
+            data: {
+                rating: payload.rating,
+                comment: payload?.comment
+            },
+            include: { property: true }
         });
 
         const aggregate = await tx.review.aggregate({
             where: {
-                propertyId: review.propertyId,
+                id: reviewId,
                 status: ReviewStatus.APPROVED,
             },
             _avg: { rating: true }
         });
 
-        const averageRating =
-            aggregate._avg.rating === null
-                ? 0
-                : Number(aggregate._avg.rating.toFixed(2));
-
         await tx.property.update({
-            where: { id: review.propertyId },
+            where: { id: review.property.id },
             data: {
-                averageRating:
-                    averageRating === null
-                        ? 0
-                        : new Prisma.Decimal(averageRating),
+                averageRating: new Prisma.Decimal(aggregate._avg.rating ?? 0),
             },
         });
 
-        return updatedReview;
+        return { review };
     });
+
+    return result;
+};
+
+const deleteReview = async (userId: string, reviewId: string) => {
+    const previousReview = await prisma.review.findUniqueOrThrow({
+        where: { id: reviewId },
+        include: {
+            property: {
+                include: {
+                    rentalRequests: {
+                        where: { tenantId: userId },
+                        include: { payment: true }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!previousReview)
+        throw new Error("Could not find the review. Please check again");
+
+    if (previousReview.reviewerId !== userId)
+        throw new Error("As you are not the reviewer, you cannot delete this review");
+
+    if (previousReview.property.rentalRequests?.[0]?.payment?.paymentStatus !== PaymentStatus.COMPLETED)
+        throw new Error("Please complete your payment first to proceed with the review");
+
+    const result = await prisma.$transaction(async (tx) => {
+        const review = await tx.review.delete({
+            where: { id: reviewId },
+            include: { property: true }
+        });
+
+        const aggregate = await tx.review.aggregate({
+            where: {
+                id: reviewId,
+                status: ReviewStatus.APPROVED,
+            },
+            _avg: { rating: true }
+        });
+
+        await tx.property.update({
+            where: { id: review.property.id },
+            data: {
+                averageRating: new Prisma.Decimal(aggregate._avg.rating ?? 0),
+            },
+        });
+
+        return { review };
+    });
+
+    return result;
 };
 
 export const reviewService = {
     createReview,
-    manageReview
+    updateReview,
+    deleteReview
 };

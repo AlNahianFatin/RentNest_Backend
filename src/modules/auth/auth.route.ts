@@ -9,8 +9,12 @@ router.post("/register", authController.registerUser);
 
 router.post("/login", authController.loginUser);
 
+router.post("/refresh-token", authController.refreshToken);
+
 router.get("/me", auth(Role.ADMIN, Role.LANDLORD, Role.TENANT), authController.myProfile);
 
-router.post("/refresh-token", authController.refreshToken);
+router.patch("/me", auth(Role.ADMIN, Role.LANDLORD, Role.TENANT), authController.updateProfile);
+
+router.patch("/updatePassword", auth(Role.ADMIN, Role.LANDLORD, Role.TENANT), authController.updatePassword);
 
 export const authRoutes = router;

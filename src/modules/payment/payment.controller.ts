@@ -34,15 +34,16 @@ const confirmPayment = catchAsync(async (req: Request, res: Response, next: Next
 });
 
 const getPaymentHistory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req?.query;
     const userId = req.user?.id as string;
 
-    const result = await paymentService.getPaymentHistory(userId);
+    const result = await paymentService.getPaymentHistory(userId, query);
 
-    if (result.length === 0) {
+    if (result.meta.totalRecordCount === 0) {
         sendResponse(res, {
             success: false,
             statusCode: httpStatus.NOT_FOUND,
-            message: "No payment record found",
+            message: "No rental record found",
             data: null
         });
     }
@@ -50,8 +51,9 @@ const getPaymentHistory = catchAsync(async (req: Request, res: Response, next: N
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Payment history retrieved successfully",
-        data: result
+        message: "Rental record retrieved successfully",
+        data: result.data,
+        meta: result.meta
     });
 });
 

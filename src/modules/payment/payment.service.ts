@@ -1,8 +1,10 @@
 import { prisma } from "../../lib/prisma";
-import { PropertyStatus, RequestStatus } from "../../../generated/prisma/enums";
+import { PaymentStatus, PropertyStatus, RentalStatus, RequestStatus, ReviewStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
 import { handleCheckoutCompleted, handleInvoicePaymentFailed, handleInvoicePaymentSucceeded, handleSubscriptionDeleted, handleSubscriptionUpdated } from "../../utils/payment.utils";
+import { IPropertyQuery } from "./payment.interface";
+import { PropertyWhereInput } from "../../../generated/prisma/models";
 
 const createSession = async (userId: string, rentalRequestId: string) => {
     const transactionResult = await prisma.$transaction(async (tx) => {
@@ -52,8 +54,8 @@ const createSession = async (userId: string, rentalRequestId: string) => {
             mode: "subscription",
             customer: stripeCustomerId,
             payment_method_types: ["card"],
-            success_url: `${config.app_url}/payment?success=true`,
-            cancel_url: `${config.app_url}/payment?success=false`,
+            success_url: `${config.app_url}/tenant-dashboard/my-rental-requests?success=Property rented successfully`,
+            cancel_url: `${config.app_url}/tenant-dashboard/my-rental-requests?error=Something went wrong`,
             metadata: {
                 userId,
                 rentalRequestId,
@@ -110,18 +112,116 @@ const confirmPayment = async (payload: Buffer, signature: string) => {
     }
 };
 
-const getPaymentHistory = async (userId: string) => {
-    const result = await prisma.payment.findMany({
-        where: { userId },
-        include: {
-            rentalRequest: {
-                include: { property: true }
-            }
+const getPaymentHistory = async (userId: string, query: IPropertyQuery) => {
+    await prisma.payment.updateMany({
+        where: {
+            userId,
+            paymentStatus: PaymentStatus.COMPLETED,
+            currentPeriodEnd: { lt: new Date() }
         },
-        orderBy: { updatedAt: "desc" }
+        data: { rentalStatus: RentalStatus.EXPIRED }
     });
 
-    return result;
+    const limit = query.limit ? Number(query.limit) : 10;
+    const page = query.page ? Number(query.page) : 1;
+    const skip = (page - 1) * limit;
+
+    const sortBy = query.sortBy ? query.sortBy : "currentPeriodEnd";
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc";
+
+    // const andConditions: PropertyWhereInput[] = [];
+
+    // if (query.search) {
+    //     andConditions.push({
+    //         OR: [
+    //             {
+    //                 location: {
+    //                     contains: query.search,
+    //                     mode: "insensitive"
+    //                 }
+    //             }
+    //         ]
+    //     })
+    // }
+
+    // if (query.status)
+    //     andConditions.push({ status: query.status });
+
+    // if (query.price)
+    //     andConditions.push({ price: query.price });
+
+    // if (query.type)
+    //     andConditions.push({ type: query.type });
+
+    // andConditions.push({ landlordId: userId });
+
+    const transactionResult = await prisma.$transaction(async (tx) => {
+        const [records, totalCurrentRecordCount, totalRecordCount] = await Promise.all([
+            tx.payment.findMany({
+                where: {
+                    userId,
+                    paymentStatus: PaymentStatus.COMPLETED,
+                    // currentPeriodEnd: { lt: new Date() }
+                },
+                include: {
+                    rentalRequest: {
+                        include: {
+                            property: {
+                                include: {
+                                    reviews: {
+                                        where: {
+                                            reviewerId: userId,
+                                            // status: ReviewStatus.APPROVED
+                                        }
+                                    }
+                                }
+                            },
+                            landlord: {
+                                omit: { password: true }
+                            }
+                        }
+                    }
+                },
+                orderBy: { [sortBy]: sortOrder },
+
+                take: limit,
+                skip: skip
+            }),
+
+            // await tx.property.count({ where: { status: PropertyStatus.AVAILABLE } }),
+
+            // await tx.property.count({ where: { status: PropertyStatus.RENTED } }),
+
+            tx.payment.count({
+                where: {
+                    userId,
+                    paymentStatus: PaymentStatus.COMPLETED,
+                    rentalStatus: RentalStatus.ACTIVE
+                }
+            }),
+
+            tx.payment.count({
+                where: {
+                    userId,
+                    paymentStatus: PaymentStatus.COMPLETED
+                    // currentPeriodEnd: { lt: new Date() }
+                }
+            })
+        ])
+
+        return { records, totalCurrentRecordCount, totalRecordCount };
+    });
+
+    return {
+        data: transactionResult.records,
+        meta: {
+            page: page,
+            limit: limit,
+            totalCurrentRecordCount: transactionResult.totalCurrentRecordCount,
+            totalRecordCount: transactionResult.totalRecordCount,
+            totalPageCount: Math.ceil(transactionResult.totalRecordCount / limit)
+        }
+    };
 };
 
 const getPaymentDetails = async (userId: string, isAdmin: boolean, paymentId: string) => {

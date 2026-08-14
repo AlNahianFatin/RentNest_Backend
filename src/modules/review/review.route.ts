@@ -7,6 +7,8 @@ const router = Router();
 
 router.post("/", auth(Role.TENANT), reviewController.createReview);
 
-router.patch("/", auth(Role.ADMIN), reviewController.manageReview);
+router.patch("/:id", auth(Role.TENANT), reviewController.updateReview);
+
+router.delete("/:id", auth(Role.TENANT), reviewController.deleteReview);
 
 export const reviewRoutes = router;

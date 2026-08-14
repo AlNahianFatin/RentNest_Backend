@@ -11,8 +11,14 @@ router.patch("/users/:id", auth(Role.ADMIN), adminController.updateUserStatus);
 
 router.get("/properties", auth(Role.ADMIN), adminController.getProperties);
 
+router.get("/properties/:id", auth(Role.ADMIN), adminController.getPropertyById);
+
 router.get("/rentals", auth(Role.ADMIN), adminController.getRentalRequests);
 
 router.post("/categories", auth(Role.ADMIN), adminController.createCategory);
+
+router.patch("/categories/:id", auth(Role.ADMIN), adminController.updateCategory);
+
+router.patch("/reviews", auth(Role.ADMIN), adminController.manageReviewStatus);
 
 export const adminRoutes = router;
