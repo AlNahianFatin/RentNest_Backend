@@ -17,7 +17,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"landlord2\",\r\n    \"email\": \"landlord2@rentnest.com\",\r\n    \"password\": \"landlord2\",\r\n    \"role\": \"LANDLORD\"\r\n}",
+              "raw": "{\r\n    \"name\": \"tenant3\",\r\n    \"email\": \"tenant3@rentnest.com\",\r\n    \"password\": \"tenant3\",\r\n    \"role\": \"LANDLORD\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -47,7 +47,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"landlord2@rentnest.com\",\r\n    \"password\": \"landlord2\"\r\n}",
+              "raw": "{\r\n    \"email\": \"admin@rentnest.com\",\r\n    \"password\": \"admin\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -190,7 +190,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"landlord2@rentnest.com\",\r\n    \"password\": \"landlord2\"\r\n}",
+              "raw": "{\r\n    \"email\": \"landlord@rentnest.com\",\r\n    \"password\": \"landlord\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -208,6 +208,66 @@
                 "api",
                 "auth",
                 "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"newPassword\": \"a\",\r\n    \"oldPassword\": \"admin\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/updatePassword",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "updatePassword"
               ]
             }
           },
@@ -362,6 +422,89 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"propertyType\": \"Home\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/categories/9def691f-9103-4f27-9eea-e9064ee07018",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "9def691f-9103-4f27-9eea-e9064ee07018"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Review Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"reviewId\": \"c97d04e5-d342-469f-b32c-acab8df8c9da\",\r\n    \"status\": \"APPROVED\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/reviews",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "reviews"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Property By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/properties/ef3d9270-a5b0-4f5e-b3af-0472b77cd71c",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                "ef3d9270-a5b0-4f5e-b3af-0472b77cd71c"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -406,13 +549,41 @@
       "name": "Landlord",
       "item": [
         {
+          "name": "Get My Properties",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"houseNo\": 23,\r\n    \"roadNo\": 65,\r\n    \"location\": \"Bashundhara KB Block\",\r\n    \"price\": 23000,\r\n    \"categoryId\": \"f89748be-40be-48af-a758-343d8721bbcf\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/landlord/properties",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "landlord",
+                "properties"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Create Property",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"houseNo\": 22,\r\n    \"roadNo\": 34,\r\n    \"location\": \"Bijoy Sarani\",\r\n    \"price\": 25000,\r\n    \"categoryId\": \"9def691f-9103-4f27-9eea-e9064ee07018\"\r\n}",
+              "raw": "{\r\n    \"houseNo\": 234,\r\n    \"roadNo\": 29,\r\n    \"location\": \"Tejgaon\",\r\n    \"thumbnail\": \"\",\r\n    \"price\": 20000,\r\n    \"categoryId\": \"9def691f-9103-4f27-9eea-e9064ee07018\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -476,7 +647,7 @@
               "raw": "{\r\n    \"houseNo\": 23,\r\n    \"roadNo\": 65,\r\n    \"location\": \"Bashundhara KB Block\",\r\n    \"price\": 23000,\r\n    \"categoryId\": \"f89748be-40be-48af-a758-343d8721bbcf\"\r\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/landlord/properties/fbfa1f5a-6a88-4e24-a6aa-982cce877ad6",
+              "raw": "http://localhost:5000/api/landlord/properties/ef3d9270-a5b0-4f5e-b3af-0472b77cd71c",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -486,7 +657,35 @@
                 "api",
                 "landlord",
                 "properties",
-                "fbfa1f5a-6a88-4e24-a6aa-982cce877ad6"
+                "ef3d9270-a5b0-4f5e-b3af-0472b77cd71c"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Rentals",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"houseNo\": 23,\r\n    \"roadNo\": 65,\r\n    \"location\": \"Bashundhara KB Block\",\r\n    \"price\": 23000,\r\n    \"categoryId\": \"f89748be-40be-48af-a758-343d8721bbcf\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/landlord/rentals",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "landlord",
+                "rentals"
               ]
             }
           },
@@ -527,7 +726,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"status\": \"ACCEPTED\"\r\n}",
+              "raw": "{\r\n    \"status\": \"REJECTED\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -535,7 +734,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:5000/api/landlord/requests/95daef00-975f-4a93-adfb-dd5f7623a2cc",
+              "raw": "http://localhost:5000/api/landlord/requests/c96d4bd4-f73d-4bc6-83e0-44be2e670c07",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -545,7 +744,7 @@
                 "api",
                 "landlord",
                 "requests",
-                "95daef00-975f-4a93-adfb-dd5f7623a2cc"
+                "c96d4bd4-f73d-4bc6-83e0-44be2e670c07"
               ]
             }
           },
@@ -596,7 +795,12 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"reviewId\": \"07bcb7fc-1cca-4667-8345-bec2d563985d\",\r\n    \"status\": \"APPROVED\"\r\n}"
+              "raw": "{\r\n    // \"reviewId\": \"07bcb7fc-1cca-4667-8345-bec2d563985d\",\r\n    // \"status\": \"APPROVED\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "http://localhost:5000/api/payments",
@@ -659,7 +863,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "http://localhost:5000/api/properties?houseNo&roadNo&location&price&status=AVAILABLE&type&limit&page=1&sortBy&sortOrder",
+              "raw": "http://localhost:5000/api/properties",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -672,43 +876,53 @@
               "query": [
                 {
                   "key": "houseNo",
-                  "value": null
+                  "value": "12",
+                  "disabled": true
                 },
                 {
                   "key": "roadNo",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "location",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "price",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "status",
-                  "value": "AVAILABLE"
+                  "value": "AVAILABLE",
+                  "disabled": true
                 },
                 {
                   "key": "type",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "limit",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "page",
-                  "value": "1"
+                  "value": "1",
+                  "disabled": true
                 },
                 {
                   "key": "sortBy",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 },
                 {
                   "key": "sortOrder",
-                  "value": null
+                  "value": "",
+                  "disabled": true
                 }
               ]
             }
@@ -728,7 +942,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "http://localhost:5000/api/properties/907526b2-d52f-46ef-844b-255826dbbd83",
+              "raw": "http://localhost:5000/api/properties/ef3d9270-a5b0-4f5e-b3af-0472b77cd71c",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -737,7 +951,7 @@
               "path": [
                 "api",
                 "properties",
-                "907526b2-d52f-46ef-844b-255826dbbd83"
+                "ef3d9270-a5b0-4f5e-b3af-0472b77cd71c"
               ]
             }
           },
@@ -755,7 +969,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"propertyId\": \"907526b2-d52f-46ef-844b-255826dbbd83\"\r\n}",
+              "raw": "{\r\n    \"propertyId\": \"dabe2179-9aaf-4d83-9828-e2231694f4e0\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -831,6 +1045,34 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Get My Rents",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"status\": \"REJECTED\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/rentals/rents",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "rentals",
+                "rents"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -844,7 +1086,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"rating\": 4,\r\n    \"comment\": \"good\",\r\n    \"propertyId\": \"907526b2-d52f-46ef-844b-255826dbbd83\"\r\n}",
+              "raw": "{\r\n    \"rating\": 4,\r\n    \"comment\": \"good\",\r\n    \"propertyId\": \"f20572c9-1665-4259-a0a8-7fdc1930a71a\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -867,13 +1109,13 @@
           "response": []
         },
         {
-          "name": "Manage Review",
+          "name": "Update Review",
           "request": {
             "method": "PATCH",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"reviewId\": \"9352ca2b-5e48-4d0d-8170-fa671f30acea\",\r\n    \"status\": \"APPROVED\"\r\n}",
+              "raw": "{\r\n    \"rating\": 4,\r\n    \"comment\": \"good\"\r\n    // \"propertyId\": \"907526b2-d52f-46ef-844b-255826dbbd83\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -881,7 +1123,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:5000/api/reviews",
+              "raw": "http://localhost:5000/api/reviews/7c524d61-b089-4465-a684-1be109ea6a20",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -889,7 +1131,33 @@
               "port": "5000",
               "path": [
                 "api",
-                "reviews"
+                "reviews",
+                "7c524d61-b089-4465-a684-1be109ea6a20"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rating\": 4,\r\n    \"comment\": \"good\"\r\n    // \"propertyId\": \"907526b2-d52f-46ef-844b-255826dbbd83\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/reviews/c80925e0-332b-4abb-88f2-0004c27f3ed1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "reviews",
+                "c80925e0-332b-4abb-88f2-0004c27f3ed1"
               ]
             }
           },
