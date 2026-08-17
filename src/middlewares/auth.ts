@@ -52,7 +52,7 @@ export const auth = (...requiredRoles: Role[]) => {
         if (!user)
             throw new Error("Forbidden. You don't have permission to access this resource.");
 
-        if (user.activeStatus === "BANNED")
+        if (user.status === "BANNED")
             throw new Error("YOur account is banned. Please contact support.");
 
         req.user = {
